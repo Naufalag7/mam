@@ -22,7 +22,9 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
+// Menghapus pesanan sebelumnya setiap kali web dibuka
+localStorage.removeItem('userCart');
+let globalCart = {}; 
 let restaurantStatus = JSON.parse(localStorage.getItem('foodStatus')) || {};
 
 function init() {
@@ -87,7 +89,6 @@ function toggleSingle(display, card) {
 }
 
 function toggleMulti(display, menu, element) {
-    // Pastikan jika sebelumnya datanya string, diubah jadi array
     if (!Array.isArray(globalCart[display])) globalCart[display] = [];
     
     const index = globalCart[display].indexOf(menu);
