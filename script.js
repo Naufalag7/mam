@@ -1,5 +1,20 @@
-const phoneAdmin = "628170014177"; 
+// --- KONFIGURASI FIREBASE MILIK NAUFAL ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAK-yoYk6393pLeIiKFqh_-6AWbbGgdvQA",
+    authDomain: "mam-geisha.firebaseapp.com",
+    projectId: "mam-geisha",
+    storageBucket: "mam-geisha.firebasestorage.app",
+    messagingSenderId: "954262742802",
+    appId: "1:954262742802:web:3fc8ed919716fe511f75cb",
+    // Tambahkan databaseURL manual agar koneksi lancar
+    databaseURL: "https://mam-geisha-default-rtdb.asia-southeast1.firebasedatabase.app" 
+};
 
+// Inisialisasi Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+const phoneAdmin = "628170014177"; 
 const urlParams = new URLSearchParams(window.location.search);
 const isAdmin = urlParams.get('admin') === 'true';
 
@@ -22,14 +37,20 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-// Session management agar tidak error
+// Session Management: Hapus pilihan lokal setiap web baru dibuka
 if (!window.name) {
     localStorage.removeItem('userCart');
-    window.name = "active-session";
+    window.name = "session_active";
 }
 
-let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
-let restaurantStatus = JSON.parse(localStorage.getItem('foodStatus')) || {};
+let globalCart = {}; 
+let restaurantStatus = {};
+
+// SINKRONISASI REAL-TIME: Ambil data dari Firebase
+database.ref('foodStatus').on('value', (snapshot) => {
+    restaurantStatus = snapshot.val() || {};
+    init(); // Gambar ulang UI setiap ada perubahan stok di Firebase
+});
 
 function init() {
     const gridEl = document.getElementById('main-grid');
@@ -37,12 +58,11 @@ function init() {
     gridEl.innerHTML = ""; 
 
     restaurants.forEach(resto => {
-        if (restaurantStatus[resto.id] === undefined) restaurantStatus[resto.id] = true;
-        const isOpen = restaurantStatus[resto.id];
+        // Status diambil dari cloud, default true (READY)
+        const isOpen = restaurantStatus[resto.id] !== false; 
         const card = document.createElement('div');
         
         const isSelectedCard = globalCart[resto.display] ? 'selected' : '';
-        // CLASS admin-mode HARUS ADA AGAR POINTER-EVENTS AKTIF
         card.className = `card ${isOpen ? 'open' : 'closed'} ${isSelectedCard} ${isAdmin ? 'admin-mode' : ''}`;
         
         let content = `
@@ -64,21 +84,24 @@ function init() {
         if (isAdmin) {
             content += `
                 <div class="admin-panel">
-                    <button class="btn-admin" onclick="event.stopPropagation(); toggleStatus(${resto.id})">
-                        Ubah ke ${isOpen ? 'HABIS' : 'READY'}
+                    <button class="btn-admin" onclick="event.stopPropagation(); toggleStatus(${resto.id}, ${isOpen})">
+                        Set ${isOpen ? 'HABIS' : 'READY'}
                     </button>
                 </div>`;
         }
 
         card.innerHTML = content;
-
         if (resto.type === "single" && isOpen) {
             card.onclick = () => toggleSingle(resto.display, card);
         }
-
         gridEl.appendChild(card);
     });
     renderFloatingButton();
+}
+
+function toggleStatus(id, currentStatus) {
+    // KIRIM PERUBAHAN KE FIREBASE
+    database.ref('foodStatus/' + id).set(!currentStatus);
 }
 
 function clearAll() {
@@ -95,7 +118,7 @@ function toggleSingle(display, card) {
         globalCart[display] = "__SINGLE__"; 
         card.classList.add('selected');
     }
-    saveAndRender();
+    renderFloatingButton();
 }
 
 function toggleMulti(display, menu, element) {
@@ -112,11 +135,6 @@ function toggleMulti(display, menu, element) {
     const card = element.closest('.card');
     if (globalCart[display]) card.classList.add('selected');
     else card.classList.remove('selected');
-    saveAndRender();
-}
-
-function saveAndRender() {
-    localStorage.setItem('userCart', JSON.stringify(globalCart));
     renderFloatingButton();
 }
 
@@ -129,18 +147,12 @@ function renderFloatingButton() {
         floatingDiv.innerHTML = `
             <div class="cart-actions">
                 <button class="btn-clear-floating" onclick="clearAll()">🗑️</button>
-                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang ❤️</button>
+                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang</button>
             </div>
         `;
     } else {
         floatingDiv.style.display = 'none';
     }
-}
-
-function toggleStatus(id) {
-    restaurantStatus[id] = !restaurantStatus[id];
-    localStorage.setItem('foodStatus', JSON.stringify(restaurantStatus));
-    init(); 
 }
 
 function sendWhatsApp() {

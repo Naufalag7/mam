@@ -6,6 +6,9 @@
     <title>Pilih Makan Geisha ❤️</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -14,14 +17,9 @@
     <p>Langsung tap makanan favoritmu ya!</p>
 </header>
 
-<main class="grid" id="main-grid">
-</main>
+<main class="grid" id="main-grid"></main>
 
-<div id="floating-cart-container" class="floating-cart">
-    <button class="btn-wa-floating" onclick="sendWhatsApp()">
-        <span id="btn-text">Kirim Pesanan</span>
-    </button>
-</div>
+<div id="floating-cart-container" class="floating-cart"></div>
 
 <script src="script.js"></script>
 </body>
