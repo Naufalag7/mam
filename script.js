@@ -5,12 +5,12 @@ const isAdmin = urlParams.get('admin') === 'true';
 
 const restaurants = [
     { id: 3, display: "Bolosego", type: "multi", menus: ["Sego Meteyor", "Iga Mercon", "Sop Iga Sapi"] },
-    { id: 12, display: "Sambel Colek Perumnas", type: "multi", menus: ["Udang", "Cumi"] },
+    { id: 12, display: "Sambel Colek", type: "multi", menus: ["Udang", "Cumi"] },
     { id: 14, display: "Kedai Lombok Bunda", type: "multi", menus: ["Ayam Taliwang", "Sate Rembige"] },
     { id: 4, display: "Amanda Brownies", type: "multi", menus: ["Original", "Pink Marble", "Strawberry"] },
     { id: 6, display: "Sate Taichan Senayan", type: "multi", menus: ["Sate Ayam", "Nasi Ayam Rica"] },
     { id: 8, display: "Sego Sambel Tongkol", type: "multi", menus: ["Cumi", "Udang", "Ayam Suwir", "Ati"] },
-    { id: 13, display: "Sop Buntut", type: "multi", menus: ["Sop Daging", "Sop Iga", "Sop Buntut"] },
+    { id: 13, display: "Sop", type: "multi", menus: ["Sop Daging", "Sop Iga", "Sop Buntut"] },
     { id: 11, display: "Nasi Goreng Gila", type: "multi", menus: ["Nasi Goreng Ati Ampela", "Ketoprak Telor"] },
     { id: 1, display: "Olive Chicken", type: "single" },
     { id: 5, display: "Bihun Rebus", type: "single" },
@@ -22,7 +22,7 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-// Menghapus pesanan sebelumnya setiap kali web dibuka
+// Auto-clear pesanan setiap kali web baru dibuka
 localStorage.removeItem('userCart');
 let globalCart = {}; 
 let restaurantStatus = JSON.parse(localStorage.getItem('foodStatus')) || {};
@@ -143,14 +143,17 @@ function sendWhatsApp() {
     let message = "Halo sayang, Geisha mau makan ini:\n\n";
     
     for (let resto in globalCart) {
+        // Membersihkan nama resto dari embel-embel "Perumnas" agar lebih ringkas sesuai request
+        let cleanName = resto.replace(" Perumnas", "");
+        
         if (globalCart[resto] === "__SINGLE__") {
-            message += resto + "\n\n";
+            message += cleanName + "\n";
         } else if (Array.isArray(globalCart[resto])) {
-            message += resto + ":\n- " + globalCart[resto].join("\n- ") + "\n\n";
+            message += cleanName + " : " + globalCart[resto].join(", ") + "\n";
         }
     }
     
-    message += "Beliin ya sayang.";
+    message += "\nBeliin ya sayang.";
     window.open("https://wa.me/" + phoneAdmin + "?text=" + encodeURIComponent(message), "_blank");
 }
 
