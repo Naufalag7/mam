@@ -22,10 +22,10 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-// Supaya tidak berat, hapus cart hanya jika web baru diakses (bukan admin toggle)
+// Inisialisasi: Bersihkan cart jika bukan sedang toggle admin
 if (!window.name) {
     localStorage.removeItem('userCart');
-    window.name = "session-active";
+    window.name = "active";
 }
 
 let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
@@ -42,7 +42,7 @@ function init() {
         const card = document.createElement('div');
         
         const isSelectedCard = globalCart[resto.display] ? 'selected' : '';
-        // Tambahkan class admin-mode agar tetap bisa diklik tombolnya meski status HABIS
+        // Tambahkan class admin-mode agar CSS mengizinkan klik
         card.className = `card ${isOpen ? 'open' : 'closed'} ${isSelectedCard} ${isAdmin ? 'admin-mode' : ''}`;
         
         let content = `
@@ -65,13 +65,14 @@ function init() {
             content += `
                 <div class="admin-panel">
                     <button class="btn-admin" onclick="event.stopPropagation(); toggleStatus(${resto.id})">
-                        Set ${isOpen ? 'HABIS' : 'READY'}
+                        Ubah ke ${isOpen ? 'HABIS' : 'READY'}
                     </button>
                 </div>`;
         }
 
         card.innerHTML = content;
 
+        // Klik kartu hanya berfungsi jika READY
         if (resto.type === "single" && isOpen) {
             card.onclick = () => toggleSingle(resto.display, card);
         }
@@ -140,7 +141,7 @@ function renderFloatingButton() {
 function toggleStatus(id) {
     restaurantStatus[id] = !restaurantStatus[id];
     localStorage.setItem('foodStatus', JSON.stringify(restaurantStatus));
-    init(); // Refresh UI
+    init(); 
 }
 
 function sendWhatsApp() {
