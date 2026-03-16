@@ -28,7 +28,6 @@ body {
     color: var(--text-dark);
     margin: 0;
     padding: 20px 15px 140px 15px;
-    position: relative;
 }
 
 @keyframes gradientBG {
@@ -70,9 +69,9 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     box-shadow: 0 10px 25px rgba(240, 98, 146, 0.15);
 }
 
-/* Logic HABIS: Jika bukan admin, matikan klik. Jika admin, tetap izinkan klik untuk tombol */
+/* KHUSUS: Kartu habis tapi admin mode harus bisa dipencet tombolnya */
 .card.closed { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
-.admin-mode.card.closed { pointer-events: auto; }
+.card.admin-mode { pointer-events: auto !important; }
 
 .food-header {
     display: flex;
@@ -116,12 +115,6 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     bottom: 25px; left: 50%; transform: translateX(-50%);
     width: 92%; max-width: 450px; z-index: 1000;
     display: none; 
-    animation: slideUpBar 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-@keyframes slideUpBar {
-    from { transform: translate(-50%, 100px); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
 }
 
 .cart-actions {
@@ -152,13 +145,14 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     text-align: center;
 }
 
+/* Admin Styling */
 .admin-panel { 
-    margin-top: 15px; 
+    margin-top: 20px; 
     display: flex; 
     justify-content: flex-end;
 }
 .btn-admin { 
-    padding: 8px 16px; 
+    padding: 10px 18px; 
     font-size: 11px; 
     border-radius: 12px; 
     border: 2px solid var(--accent-blue); 
@@ -168,6 +162,7 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     cursor: pointer;
     text-transform: uppercase;
     transition: 0.2s;
+    z-index: 20;
 }
 .btn-admin:active { transform: scale(0.9); }
 

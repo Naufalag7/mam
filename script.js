@@ -22,10 +22,10 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-// Inisialisasi: Bersihkan cart jika bukan sedang toggle admin
+// Session management agar tidak error
 if (!window.name) {
     localStorage.removeItem('userCart');
-    window.name = "active";
+    window.name = "active-session";
 }
 
 let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
@@ -42,7 +42,7 @@ function init() {
         const card = document.createElement('div');
         
         const isSelectedCard = globalCart[resto.display] ? 'selected' : '';
-        // Tambahkan class admin-mode agar CSS mengizinkan klik
+        // CLASS admin-mode HARUS ADA AGAR POINTER-EVENTS AKTIF
         card.className = `card ${isOpen ? 'open' : 'closed'} ${isSelectedCard} ${isAdmin ? 'admin-mode' : ''}`;
         
         let content = `
@@ -72,7 +72,6 @@ function init() {
 
         card.innerHTML = content;
 
-        // Klik kartu hanya berfungsi jika READY
         if (resto.type === "single" && isOpen) {
             card.onclick = () => toggleSingle(resto.display, card);
         }
