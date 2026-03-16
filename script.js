@@ -10,7 +10,7 @@ const restaurants = [
     { id: 4, display: "Amanda Brownies", type: "multi", menus: ["Original", "Pink Marble", "Strawberry"] },
     { id: 6, display: "Sate Taichan Senayan", type: "multi", menus: ["Sate Ayam", "Nasi Ayam Rica"] },
     { id: 8, display: "Sego Sambel Tongkol", type: "multi", menus: ["Cumi", "Udang", "Ayam Suwir", "Ati"] },
-    { id: 13, display: "Sop", type: "multi", menus: ["Sop Daging", "Sop Iga", "Sop Buntut"] },
+    { id: 13, display: "Sop Buntut", type: "multi", menus: ["Sop Daging", "Sop Iga", "Sop Buntut"] },
     { id: 11, display: "Nasi Goreng Gila", type: "multi", menus: ["Nasi Goreng Ati Ampela", "Ketoprak Telor"] },
     { id: 1, display: "Olive Chicken", type: "single" },
     { id: 5, display: "Bihun Rebus", type: "single" },
@@ -22,9 +22,13 @@ const restaurants = [
     { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
-// Auto-clear pesanan setiap kali web baru dibuka
-localStorage.removeItem('userCart');
-let globalCart = {}; 
+// Supaya tidak berat, hapus cart hanya jika web baru diakses (bukan admin toggle)
+if (!window.name) {
+    localStorage.removeItem('userCart');
+    window.name = "session-active";
+}
+
+let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
 let restaurantStatus = JSON.parse(localStorage.getItem('foodStatus')) || {};
 
 function init() {
@@ -38,7 +42,8 @@ function init() {
         const card = document.createElement('div');
         
         const isSelectedCard = globalCart[resto.display] ? 'selected' : '';
-        card.className = `card ${isOpen ? 'open' : 'closed'} ${isSelectedCard}`;
+        // Tambahkan class admin-mode agar tetap bisa diklik tombolnya meski status HABIS
+        card.className = `card ${isOpen ? 'open' : 'closed'} ${isSelectedCard} ${isAdmin ? 'admin-mode' : ''}`;
         
         let content = `
             <div class="food-header">
@@ -57,7 +62,12 @@ function init() {
         }
 
         if (isAdmin) {
-            content += `<div class="admin-panel"><button class="btn-admin" onclick="event.stopPropagation(); toggleStatus(${resto.id})">Kelola Stok</button></div>`;
+            content += `
+                <div class="admin-panel">
+                    <button class="btn-admin" onclick="event.stopPropagation(); toggleStatus(${resto.id})">
+                        Set ${isOpen ? 'HABIS' : 'READY'}
+                    </button>
+                </div>`;
         }
 
         card.innerHTML = content;
@@ -90,7 +100,6 @@ function toggleSingle(display, card) {
 
 function toggleMulti(display, menu, element) {
     if (!Array.isArray(globalCart[display])) globalCart[display] = [];
-    
     const index = globalCart[display].indexOf(menu);
     if (index === -1) {
         globalCart[display].push(menu);
@@ -100,11 +109,9 @@ function toggleMulti(display, menu, element) {
         element.classList.remove('selected');
         if (globalCart[display].length === 0) delete globalCart[display];
     }
-    
     const card = element.closest('.card');
     if (globalCart[display]) card.classList.add('selected');
     else card.classList.remove('selected');
-    
     saveAndRender();
 }
 
@@ -116,15 +123,13 @@ function saveAndRender() {
 function renderFloatingButton() {
     const floatingDiv = document.getElementById('floating-cart-container');
     if (!floatingDiv) return;
-    
     const totalResto = Object.keys(globalCart).length;
-
     if (totalResto > 0) {
         floatingDiv.style.display = 'block';
         floatingDiv.innerHTML = `
             <div class="cart-actions">
                 <button class="btn-clear-floating" onclick="clearAll()">🗑️</button>
-                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang</button>
+                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang ❤️</button>
             </div>
         `;
     } else {
@@ -135,24 +140,20 @@ function renderFloatingButton() {
 function toggleStatus(id) {
     restaurantStatus[id] = !restaurantStatus[id];
     localStorage.setItem('foodStatus', JSON.stringify(restaurantStatus));
-    init();
+    init(); // Refresh UI
 }
 
 function sendWhatsApp() {
     if (Object.keys(globalCart).length === 0) return;
     let message = "Halo sayang, Geisha mau makan ini:\n\n";
-    
     for (let resto in globalCart) {
-        // Membersihkan nama resto dari embel-embel "Perumnas" agar lebih ringkas sesuai request
         let cleanName = resto.replace(" Perumnas", "");
-        
         if (globalCart[resto] === "__SINGLE__") {
             message += cleanName + "\n";
         } else if (Array.isArray(globalCart[resto])) {
             message += cleanName + " : " + globalCart[resto].join(", ") + "\n";
         }
     }
-    
     message += "\nBeliin ya sayang.";
     window.open("https://wa.me/" + phoneAdmin + "?text=" + encodeURIComponent(message), "_blank");
 }

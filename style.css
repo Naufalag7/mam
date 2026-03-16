@@ -59,7 +59,9 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     padding: 22px; 
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
 }
 
 .card.selected {
@@ -69,6 +71,8 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
 }
 
 .card.closed { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+/* Saat admin, kartu yang closed tetap bisa diklik tombol adminnya */
+.card.closed.admin-mode { pointer-events: auto; }
 
 .food-header {
     display: flex;
@@ -81,7 +85,7 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
 
 .status-badge { font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 12px; }
 .open-bg { background: var(--sage-green); color: var(--accent-sage); }
-.closed-bg { background: var(--primary-pink); color: var(--accent-pink); }
+.closed-bg { background: #dfe6e9; color: #636e72; }
 
 .menu-container {
     display: grid;
@@ -107,7 +111,6 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     color: var(--accent-pink);
 }
 
-/* Floating Bar Container */
 .floating-cart {
     position: fixed;
     bottom: 25px; left: 50%; transform: translateX(-50%);
@@ -130,7 +133,7 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
 .btn-clear-floating {
     flex: 0 0 60px;
     background: #fff;
-    border: 1px solid #eee;
+    border: none;
     border-radius: 22px;
     display: flex;
     justify-content: center;
@@ -148,6 +151,25 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     cursor: pointer;
     text-align: center;
 }
+
+/* Admin Styling Baru */
+.admin-panel { 
+    margin-top: 15px; 
+    display: flex; 
+    justify-content: flex-end;
+}
+.btn-admin { 
+    padding: 6px 12px; 
+    font-size: 10px; 
+    border-radius: 8px; 
+    border: 1px solid #ddd; 
+    background: #f1f2f6; 
+    color: #7f8c8d; 
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+.btn-admin:hover { background: #dfe4ea; }
 
 .flying-decor {
     position: fixed;
