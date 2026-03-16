@@ -8,7 +8,7 @@
     --text-dark: #2c3e50;
     --white: #ffffff;
     --bg-soft: #f8f9fa;
-    --glass: rgba(255, 255, 255, 0.85);
+    --glass: rgba(255, 255, 255, 0.9);
 }
 
 html, body {
@@ -28,7 +28,7 @@ body {
     color: var(--text-dark);
     margin: 0;
     padding: 20px 15px 140px 15px;
-    position: relative; /* Penting untuk elemen terbang */
+    position: relative;
 }
 
 @keyframes gradientBG {
@@ -107,6 +107,7 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     color: var(--accent-pink);
 }
 
+/* Floating Bar Container */
 .floating-cart {
     position: fixed;
     bottom: 25px; left: 50%; transform: translateX(-50%);
@@ -122,19 +123,19 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
 
 .cart-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     filter: drop-shadow(0 12px 24px rgba(0,0,0,0.1));
 }
 
 .btn-clear-floating {
     flex: 0 0 60px;
-    background: var(--white);
-    border: none;
+    background: #fff;
+    border: 1px solid #eee;
     border-radius: 22px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
 }
 
@@ -148,11 +149,10 @@ header p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
     text-align: center;
 }
 
-/* --- EFEK TERBANG --- */
 .flying-decor {
     position: fixed;
     bottom: -50px;
-    z-index: -1; /* Berada di belakang kartu agar tidak mengganggu klik */
+    z-index: -1;
     pointer-events: none;
     user-select: none;
 }

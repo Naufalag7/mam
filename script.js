@@ -12,14 +12,14 @@ const restaurants = [
     { id: 8, display: "Sego Sambel Tongkol", type: "multi", menus: ["Cumi", "Udang", "Ayam Suwir", "Ati"] },
     { id: 13, display: "Sop Buntut", type: "multi", menus: ["Sop Daging", "Sop Iga", "Sop Buntut"] },
     { id: 11, display: "Nasi Goreng Gila", type: "multi", menus: ["Nasi Goreng Ati Ampela", "Ketoprak Telor"] },
-    { id: 1, display: "Olive Chicken", type: "single", autoMenu: "Paha Atas" },
-    { id: 5, display: "Bihun Rebus", type: "single", autoMenu: "Porsi Biasa" },
-    { id: 7, display: "Pisang Nugget", type: "single", autoMenu: "Cokelat Keju" },
-    { id: 10, display: "Hokben", type: "single", autoMenu: "Egg Chicken Roll" },
-    { id: 15, display: "Dimsum", type: "single", autoMenu: "Mentai" },
-    { id: 16, display: "Risoles", type: "single", autoMenu: "Mayo" },
-    { id: 17, display: "JCO", type: "single", autoMenu: "Alcapone" },
-    { id: 18, display: "Cilok Kriwil", type: "single", autoMenu: "Campur" }
+    { id: 1, display: "Olive Chicken", type: "single" },
+    { id: 5, display: "Bihun Rebus", type: "single" },
+    { id: 7, display: "Pisang Nugget", type: "single" },
+    { id: 10, display: "Hokben", type: "single" },
+    { id: 15, display: "Dimsum", type: "single" },
+    { id: 16, display: "Risoles", type: "single" },
+    { id: 17, display: "JCO", type: "single" },
+    { id: 18, display: "Cilok Kriwil", type: "single" }
 ];
 
 let globalCart = JSON.parse(localStorage.getItem('userCart')) || {};
@@ -48,7 +48,7 @@ function init() {
         if (resto.type === "multi" && isOpen) {
             content += `<div class="menu-container">`;
             resto.menus.forEach(m => {
-                const isItemSelected = (globalCart[resto.display] || []).includes(m) ? "selected" : "";
+                const isItemSelected = Array.isArray(globalCart[resto.display]) && globalCart[resto.display].includes(m) ? "selected" : "";
                 content += `<div class="menu-item ${isItemSelected}" onclick="event.stopPropagation(); toggleMulti('${resto.display}', '${m}', this)">${m}</div>`;
             });
             content += `</div>`;
@@ -61,7 +61,7 @@ function init() {
         card.innerHTML = content;
 
         if (resto.type === "single" && isOpen) {
-            card.onclick = () => toggleSingle(resto.display, resto.autoMenu, card);
+            card.onclick = () => toggleSingle(resto.display, card);
         }
 
         gridEl.appendChild(card);
@@ -70,28 +70,27 @@ function init() {
 }
 
 function clearAll() {
-    if (confirm("Hapus semua pilihan makanan, sayang?")) {
-        globalCart = {};
-        localStorage.removeItem('userCart');
-        init();
-    }
+    globalCart = {};
+    localStorage.removeItem('userCart');
+    init();
 }
 
-function toggleSingle(display, menu, card) {
+function toggleSingle(display, card) {
     if (globalCart[display]) {
         delete globalCart[display];
         card.classList.remove('selected');
     } else {
-        globalCart[display] = [menu];
+        globalCart[display] = "__SINGLE__"; 
         card.classList.add('selected');
     }
     saveAndRender();
 }
 
 function toggleMulti(display, menu, element) {
-    if (!globalCart[display]) globalCart[display] = [];
-    const index = globalCart[display].indexOf(menu);
+    // Pastikan jika sebelumnya datanya string, diubah jadi array
+    if (!Array.isArray(globalCart[display])) globalCart[display] = [];
     
+    const index = globalCart[display].indexOf(menu);
     if (index === -1) {
         globalCart[display].push(menu);
         element.classList.add('selected');
@@ -116,15 +115,15 @@ function saveAndRender() {
 function renderFloatingButton() {
     const floatingDiv = document.getElementById('floating-cart-container');
     if (!floatingDiv) return;
-    let totalItems = 0;
-    for (let r in globalCart) totalItems += globalCart[r].length;
+    
+    const totalResto = Object.keys(globalCart).length;
 
-    if (totalItems > 0) {
+    if (totalResto > 0) {
         floatingDiv.style.display = 'block';
         floatingDiv.innerHTML = `
             <div class="cart-actions">
                 <button class="btn-clear-floating" onclick="clearAll()">🗑️</button>
-                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang ❤️</button>
+                <button class="btn-wa-floating" onclick="sendWhatsApp()">Kirim ke Ayang</button>
             </div>
         `;
     } else {
@@ -140,40 +139,34 @@ function toggleStatus(id) {
 
 function sendWhatsApp() {
     if (Object.keys(globalCart).length === 0) return;
-    let message = "Halo sayang! Geisha mau makan ini: \n\n";
+    let message = "Halo sayang, Geisha mau makan ini:\n\n";
+    
     for (let resto in globalCart) {
-        message += `*📍 ${resto}*\n- ${globalCart[resto].join('\n- ')}\n\n`;
+        if (globalCart[resto] === "__SINGLE__") {
+            message += resto + "\n\n";
+        } else if (Array.isArray(globalCart[resto])) {
+            message += resto + ":\n- " + globalCart[resto].join("\n- ") + "\n\n";
+        }
     }
-    message += "Beliin ya sayang! 🥰❤️";
-    window.open(`https://wa.me/${phoneAdmin}?text=${encodeURIComponent(message)}`, '_blank');
+    
+    message += "Beliin ya sayang.";
+    window.open("https://wa.me/" + phoneAdmin + "?text=" + encodeURIComponent(message), "_blank");
 }
 
-// --- LOGIKA DEKORASI TERBANG ---
 const emojis = ["🦋", "❤️", "✨", "🌸", "🍭"];
-
 function spawnDecor() {
     const decor = document.createElement('div');
     decor.className = 'flying-decor';
     decor.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-    
-    const startX = Math.random() * 100; // Posisi horizontal acak (0-100vw)
-    const duration = 5 + Math.random() * 5; // Durasi terbang (5-10 detik)
-    const size = 20 + Math.random() * 20; // Ukuran (20-40px)
-
+    const startX = Math.random() * 100;
+    const duration = 5 + Math.random() * 5;
+    const size = 20 + Math.random() * 20;
     decor.style.left = startX + 'vw';
     decor.style.fontSize = size + 'px';
     decor.style.animation = `flyUp ${duration}s linear forwards`;
-
     document.body.appendChild(decor);
-
-    // Hapus elemen setelah animasi selesai
-    setTimeout(() => {
-        decor.remove();
-    }, duration * 1000);
+    setTimeout(() => { decor.remove(); }, duration * 1000);
 }
-
-// Mulai spawn secara berkala
 setInterval(spawnDecor, 1500);
 
-// Inisialisasi saat window load
 window.onload = init;
